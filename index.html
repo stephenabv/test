@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+
+<head>
+    <title>Slick Carousel Example</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick-theme.css" />
+    <style>
+        .carousel-container {
+            max-width: 800px;
+            /* Set maximum width */
+            width: 100%;
+            text-align: center;
+            position: relative;
+            /* Make the container relative */
+            height: 100%;
+            margin: 0 auto;
+            /* Center the container horizontally */
+        }
+
+        .carousel-container iframe {
+            width: 100%;
+            height: 100%;
+        }
+
+        .slick-slide {
+            margin: 0 10px;
+            /* Add space between items */
+        }
+
+        .slick-slide img {
+            width: 100%;
+            height: auto;
+            max-height: 150px;
+            /* Set max height for consistency */
+        }
+
+        .slick-prev,
+        .slick-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.8);
+            /* Transparent background */
+            color: black;
+            /* Arrow color */
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+        }
+
+        .slick-prev {
+            left: -40px;
+            /* Position the prev arrow outside the container */
+        }
+
+        .slick-next {
+            right: -40px;
+            /* Position the next arrow outside the container */
+        }
+
+        @media (max-width: 768px) {
+            .carousel-container {
+                max-width: 500px;
+                /* Adjust maximum width for smaller screens */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .carousel-container {
+                max-width: 300px;
+                /* Adjust maximum width for even smaller screens */
+            }
+        }
+    </style>
+</head>
+
+<body ng-controller="CarouselController">
+    <div class="carousel-container" ng-style="getContainerStyle()">
+        <div class="carousel">
+            <div ng-repeat="item in items" class="slide">
+                <img ng-src="{{ item.imageUrl }}" alt="{{ item.name }}">
+                <p>{{ item.name }}</p>
+            </div>
+        </div>
+    </div>
+
+    <button class="slick-prev">Prev</button>
+    <button class="slick-next">Next</button>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.min.js"></script>
+    <script>
+        angular.module('myApp', [])
+            .controller('CarouselController', function ($scope, $http, $window) {
+                // Variable to test different company codes
+                $scope.companyCode = 'dev'; // Change this to test different company codes
+
+                // Fetch data based on company code
+                $http.get('server.json').then(function (response) {
+                    $scope.items = response.data[$scope.companyCode];
+                    initializeCarousel();
+                }).catch(function (error) {
+                    console.error('Error fetching data:', error);
+                });
+
+                // function initializeCarousel() {
+                //     // Ensure DOM is fully loaded before initializing the carousel
+                //     angular.element(document).ready(function () {
+                //         // Initialize the Slick Carousel
+                //         $('.carousel').slick({
+                //             slidesToShow: 3, // Default value
+                //             slidesToScroll: 1,
+                //             dots: true,
+                //             infinite: true,
+                //             autoplay: true,
+                //             autoplaySpeed: 2000,
+                //             responsive: [
+                //                 {
+                //                     breakpoint: 768,
+                //                     settings: {
+                //                         slidesToShow: 2
+                //                     }
+                //                 },
+                //                 {
+                //                     breakpoint: 480,
+                //                     settings: {
+                //                         slidesToShow: 1
+                //                     }
+                //                 }
+                //             ]
+                //         });
+                //     });
+                // }
+
+
+                function initializeCarousel() {
+                    // Ensure DOM is fully loaded before initializing the carousel
+                    angular.element(document).ready(function () {
+                        // Calculate the number of items to show per slide based on the number of items fetched
+                        var slidesToShow = 5; // Default value
+                        if ($scope.items.length >= 2) {
+                            slidesToShow = $scope.items.length; // If there are 2 or fewer items, show all of them in one slide
+                        } else if ($scope.items.length <= 5) {
+                            slidesToShow = slidesToShow; // If there are 5 or fewer items, show 2 items per slide
+                        }
+
+                        // Initialize the Slick Carousel
+                        $('.carousel').slick({
+                            slidesToShow: slidesToShow,
+                            slidesToScroll: slidesToShow, // Scroll by the same number of items
+                            dots: true,
+                            infinite: true,
+                            autoplay: true,
+                            autoplaySpeed: 2000
+                        });
+                    });
+                }
+
+
+                // Check if the page is inside an iframe
+                $scope.isInIframe = function () {
+                    try {
+                        return window.self !== window.top;
+                    } catch (e) {
+                        return true;
+                    }
+                };
+
+                // Get container style based on iframe context
+                $scope.getContainerStyle = function () {
+                    if ($scope.isInIframe()) {
+                        return {
+                            width: '100%',
+                            height: '100%'
+                        };
+                    } else {
+                        return {};
+                    }
+                };
+
+                // Adjust carousel dimensions based on window resize
+                angular.element($window).bind('resize', function () {
+                    initializeCarousel();
+                });
+            });
+    </script>
+</body>
+
+</html>
